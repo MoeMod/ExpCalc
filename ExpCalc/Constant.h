@@ -6,7 +6,7 @@
 #define EXPCALC_CONSTANT_H
 
 #include "IConstant.h"
-
+#include "ctype.h"
 
 namespace detail
 {
@@ -49,8 +49,8 @@ namespace detail
 	{
 		std::string ret = std::to_string(std::forward<T>(v));
 		if(!ret.empty() && (
-				!std::isdigit(ret.front()) ||
-				!std::isdigit(ret.back())
+				!isdigit(ret.front()) ||
+				!isdigit(ret.back())
 				))
 		{
 			ret = '(' + std::move(ret) + ')';

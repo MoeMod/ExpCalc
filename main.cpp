@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iterator>
+#include <algorithm>
 
 #include "ExpCalc/ExpCalc.h"
 

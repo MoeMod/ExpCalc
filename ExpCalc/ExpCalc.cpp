@@ -16,9 +16,7 @@
 
 namespace detail
 {
-	template<class...Char>
-	constexpr auto FindLastCharIgnoreBrace(const std::string_view &sv, Char...C)
-	-> typename std::enable_if<(std::is_convertible<Char, char>::value && ...), size_t>::type
+	constexpr size_t FindLastCharIgnoreBrace(const std::string_view &sv, const std::string_view &sz)
 	{
 		auto n = std::string_view::npos;
 		for(size_t i = 0, b = 0; i < sv.size(); ++i)
@@ -27,9 +25,7 @@ namespace detail
 				++b;
 			if(sv[i] == ')')
 				--b;
-			if(b)
-				continue;
-			if(((sv[i] == C) || ...))
+			if(!b && sz.find(sv[i]) != std::string_view::npos)
 				n = i;
 		}
 		return n;
@@ -42,7 +38,7 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 		return std::make_shared<TConstant<int>>(0);
 
 	// handle operators
-	if(auto n  = detail::FindLastCharIgnoreBrace(sv, '+', '-'); n != std::string_view::npos)
+	if(auto n  = detail::FindLastCharIgnoreBrace(sv, "+-"); n != std::string_view::npos)
 	{
 		if(sv[n] == '+')
 			return n == 0 ?
@@ -54,7 +50,7 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 		            std::make_shared<OptMinus>(buildExpression(sv.substr(0, n)), buildExpression(sv.substr(n+1)));
 	}
 
-	if(auto n  = detail::FindLastCharIgnoreBrace(sv, '*', '/'); n != std::string_view::npos)
+	if(auto n  = detail::FindLastCharIgnoreBrace(sv, "*/"); n != std::string_view::npos)
 	{
 		if(sv[n] == '*')
 			return std::make_shared<OptMultiply>(buildExpression(sv.substr(0, n)), buildExpression(sv.substr(n+1)));
@@ -69,11 +65,11 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 	if(auto n = sv.find('.'); n != std::string_view::npos)
 		try {
 			return std::make_shared<TConstant<double>>(std::stod(std::string(sv))); // try
-		} catch( const std::exception &e) {}
+		} catch(...) {}
 
 	try {
 		return std::make_shared<TConstant<long long>>(std::stoull(std::string(sv))); // try
-	} catch( const std::exception &e) {}
+	} catch(...) {}
 
 
 	return std::make_shared<InvalidExpression>();
