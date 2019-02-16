@@ -27,24 +27,47 @@ class OptPlus : public detail::TBinaryOperator<'+', true, true>
 {
 public:
 	using TBinaryOperator::TBinaryOperator;
+	std::shared_ptr<IExpression> simplify() override;
+	std::shared_ptr<IBinaryOperator> clone(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) const override
+	{
+		return std::make_shared<OptPlus>(std::move(a), std::move(b));
+	}
 };
 
 class OptMinus : public detail::TBinaryOperator<'-', false, false>
 {
 public:
 	using TBinaryOperator::TBinaryOperator;
+	std::shared_ptr<IExpression> simplify() override;
+	std::shared_ptr<IBinaryOperator> clone(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) const override
+	{
+		return std::make_shared<OptMinus>(std::move(a), std::move(b));
+	}
 };
 
 class OptMultiply : public detail::TBinaryOperator<'*', true, true>
 {
 public:
 	using TBinaryOperator::TBinaryOperator;
+	std::shared_ptr<IExpression> simplify() override;
+	std::shared_ptr<IBinaryOperator> clone(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) const override
+	{
+		return std::make_shared<OptMultiply>(std::move(a), std::move(b));
+	}
 };
 
 class OptDivide : public detail::TBinaryOperator<'/', false, false>
 {
 public:
 	using TBinaryOperator::TBinaryOperator;
+	std::shared_ptr<IExpression> simplify() override
+	{
+		return IExpression::shared_from_this();
+	}
+	std::shared_ptr<IBinaryOperator> clone(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) const override
+	{
+		return std::make_shared<OptDivide>(std::move(a), std::move(b));
+	}
 };
 
 #endif //EXPCALC_BINARYOPERATOR_H

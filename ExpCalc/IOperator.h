@@ -14,7 +14,10 @@
 class IOperator : public IExpression
 {
 public:
-
+	std::shared_ptr<IExpression> simplify() override
+	{
+		return shared_from_this();
+	}
 };
 
 class IUnaryOperator : public IOperator
@@ -24,6 +27,9 @@ public:
 
 public:
 	const std::shared_ptr<IExpression> &getBoundArgPtr() const { return _1; }
+
+	virtual std::shared_ptr<IUnaryOperator> clone(std::shared_ptr<IExpression> a) const = 0;
+	std::shared_ptr<IExpression> simplify() override;
 
 public:
 	const std::shared_ptr<IExpression> _1;
@@ -41,6 +47,9 @@ public:
 	virtual bool hasAssociativeProperty() const = 0;
 	virtual bool hasCommutativeProperty() const = 0;
 
+	virtual std::shared_ptr<IBinaryOperator> clone(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) const = 0;
+
+	std::shared_ptr<IExpression> simplify() override;
 
 public:
 	std::shared_ptr<IExpression> _1;

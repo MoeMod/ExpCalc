@@ -7,6 +7,7 @@
 
 #include "IConstant.h"
 
+
 namespace detail
 {
 	template<class T, class Final>
@@ -16,24 +17,30 @@ namespace detail
 	{
 	public:
 		// CRTP Generator
-		bool equalsTo(const IConstant &rhs) const override
-		{
-			// known *this, unknown rhs
-			return rhs.rightEqualsTo(static_cast<const Final &>(*this));
-		}
+		// known *this, unknown rhs
+		bool equalsTo(const IConstant &rhs) const override { return rhs.rightEqualsTo(static_cast<const Final &>(*this)); }
+		std::shared_ptr<IConstant> add(const IConstant &rhs) const override { return rhs.rightAdd(static_cast<const Final &>(*this)); }
+		std::shared_ptr<IConstant> multiply(const IConstant &rhs) const override { return rhs.rightMultiply(static_cast<const Final &>(*this)); }
+		// static dispatch
 		bool rightEqualsTo(const TConstant<First> &lhs) const override
 		{
-			// static dispatch
 			const auto &rhs = static_cast<const Final &>(*this);
 			return lhs.get() == rhs.get();
+		}
+		std::shared_ptr<IConstant> rightAdd(const TConstant<First> &lhs) const override
+		{
+			const auto &rhs = static_cast<const Final &>(*this);
+			return std::make_shared<TConstant<typename std::common_type<typename Final::type, First>::type>>(lhs.get() + rhs.get());
+		}
+		std::shared_ptr<IConstant> rightMultiply(const TConstant<First> &lhs) const override
+		{
+			const auto &rhs = static_cast<const Final &>(*this);
+			return std::make_shared<TConstant<typename std::common_type<typename Final::type, First>::type>>(lhs.get() * rhs.get());
 		}
 	};
 	template<template<class...> class List, class Final>
 	class CConstantVisitorGenerator<List<>, Final> : public IConstant {};
 }
-
-template<class Final>
-using TConstantVisitor = detail::CConstantVisitorGenerator<ConstantTypeList, Final>;
 
 namespace detail
 {
@@ -65,16 +72,21 @@ namespace detail
 }
 
 template<class T>
-class TConstant : public TConstantVisitor<TConstant<T>>
+class TConstant : public detail::CConstantVisitorGenerator<ConstantTypeList, TConstant<T>>
 {
+public:
+	using type = T;
+
 public:
 	explicit TConstant(T v) : value(std::move(v)) {}
 
 public:
 	std::string toString() const override { return detail::toString(value); }
+	std::shared_ptr<IExpression> simplify() override { return IExpression::shared_from_this(); }
 
 	bool isZero() const override { return detail::isZero(value); }
 	bool isOne() const override { return detail::isOne(value); }
+	std::shared_ptr<IConstant> invert() const override { return std::make_shared<TConstant<T>>(-get()); }
 
 //	bool equalsTo(const IConstant &rhs) const override
 //	{

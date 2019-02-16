@@ -6,12 +6,14 @@
 #define EXPCALC_IEXPRESSION_H
 
 #include <string>
+#include <memory>
 
-class IExpression
+class IExpression : public std::enable_shared_from_this<IExpression>
 {
 public:
 	virtual ~IExpression() = default;
 	virtual std::string toString() const = 0;
+	virtual std::shared_ptr<IExpression> simplify() = 0;
 };
 
 

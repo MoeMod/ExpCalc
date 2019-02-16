@@ -14,23 +14,6 @@
 
 #include "InvalidExpression.h"
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <stack>
-
-struct globalvars_t
-{
-	std::shared_ptr<TConstant<int>> zero = std::make_shared<TConstant<int>>(0);
-	std::shared_ptr<TConstant<int>> one = std::make_shared<TConstant<int>>(1);
-	std::shared_ptr<TConstant<int>> two = std::make_shared<TConstant<int>>(2);
-};
-globalvars_t &global()
-{
-	static globalvars_t x;
-	return x;
-}
-
 namespace detail
 {
 	template<class...Char>
@@ -56,7 +39,7 @@ namespace detail
 std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 {
 	if(sv.empty())
-		return global().zero;
+		return std::make_shared<TConstant<int>>(0);
 
 	// handle operators
 	if(auto n  = detail::FindLastCharIgnoreBrace(sv, '+', '-'); n != std::string_view::npos)
@@ -89,7 +72,7 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 		} catch( const std::exception &e) {}
 
 	try {
-		return std::make_shared<TConstant<unsigned long long>>(std::stoull(std::string(sv))); // try
+		return std::make_shared<TConstant<long long>>(std::stoull(std::string(sv))); // try
 	} catch( const std::exception &e) {}
 
 

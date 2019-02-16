@@ -7,7 +7,7 @@ int main() {
 			std::istream_iterator<std::string>(std::cin),
 			std::istream_iterator<std::string>(),
 			std::ostream_iterator<std::string>(std::cout, "\n"),
-			buildExpressionString
+			buildExpressionStringSimplified
 	);
 	return 0;
 }

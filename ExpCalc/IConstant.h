@@ -11,6 +11,8 @@
 template<class T>
 class TConstant;
 
+class IConstant;
+
 namespace detail
 {
 	template<class T>
@@ -20,17 +22,23 @@ namespace detail
 	{
 	public:
 		using IBaseConstantVisitorInterfaceGenerator<List<TypesToMake...>>::rightEqualsTo;
+		using IBaseConstantVisitorInterfaceGenerator<List<TypesToMake...>>::rightAdd;
+		using IBaseConstantVisitorInterfaceGenerator<List<TypesToMake...>>::rightMultiply;
 		virtual bool rightEqualsTo(const TConstant<First> &lhs) const = 0;
+		virtual std::shared_ptr<IConstant> rightAdd(const TConstant<First> &lhs) const = 0;
+		virtual std::shared_ptr<IConstant> rightMultiply(const TConstant<First> &lhs) const = 0;
 	};
 	template<template<class...> class List, class First>
 	class IBaseConstantVisitorInterfaceGenerator<List<First>>
 	{
 	public:
 		virtual bool rightEqualsTo(const TConstant<First> &lhs) const = 0;
+		virtual std::shared_ptr<IConstant> rightAdd(const TConstant<First> &lhs) const = 0;
+		virtual std::shared_ptr<IConstant> rightMultiply(const TConstant<First> &lhs) const = 0;
 	};
 }
 
-using ConstantTypeList = std::tuple<int, long, long long, unsigned long, unsigned long long, float, double, long double>;
+using ConstantTypeList = std::tuple<int, long, long long, float, double, long double>;
 using IBaseConstantVisitorInterface = detail::IBaseConstantVisitorInterfaceGenerator<ConstantTypeList>;
 
 class IConstant : public IExpression, private IBaseConstantVisitorInterface
@@ -41,10 +49,15 @@ public:
 
 	// double dispatch visitor
 	virtual bool equalsTo(const IConstant &rhs) const = 0;
+	virtual std::shared_ptr<IConstant> add(const IConstant &rhs) const = 0;
+	virtual std::shared_ptr<IConstant> multiply(const IConstant &rhs) const = 0;
+	virtual std::shared_ptr<IConstant> invert() const = 0;
 
 public:
 	// already bound lhs' type
 	using IBaseConstantVisitorInterface::rightEqualsTo;
+	using IBaseConstantVisitorInterface::rightAdd;
+	using IBaseConstantVisitorInterface::rightMultiply;
 //	virtual bool rightEqualsTo(const TConstant<int> &lhs) const = 0;
 //	virtual bool rightEqualsTo(const TConstant<long> &lhs) const = 0;
 //	virtual bool rightEqualsTo(const TConstant<long long> &lhs) const = 0;
