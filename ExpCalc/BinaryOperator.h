@@ -7,13 +7,29 @@
 
 #include "IOperator.h"
 
+class BinaryOperator : public IBinaryOperator
+{
+public:
+	BinaryOperator(std::shared_ptr<IExpression> a, std::shared_ptr<IExpression> b) noexcept : _1(std::move(a)), _2(std::move(b)) {}
+
+public:
+	std::shared_ptr<IExpression> getBoundLeftArgPtr() const override { return _1; }
+	std::shared_ptr<IExpression> getBoundRightArgPtr() const override { return _2; }
+
+	std::shared_ptr<IExpression> simplify() override;
+
+public:
+	const std::shared_ptr<IExpression> _1;
+	const std::shared_ptr<IExpression> _2;
+};
+
 namespace detail
 {
 	template<char Name, bool bAssociativeProperty, bool bCommutativeProperty>
-	class TBinaryOperator : public IBinaryOperator
+	class TBinaryOperator : public BinaryOperator
 	{
 	public:
-		using IBinaryOperator::IBinaryOperator;
+		using BinaryOperator::BinaryOperator;
 		std::string toString() const override
 		{
 			return '(' + _1->toString() + Name + _2->toString() + ')';

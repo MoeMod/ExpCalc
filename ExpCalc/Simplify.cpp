@@ -7,7 +7,7 @@
 #include "BinaryOperator.h"
 #include <mutex>
 
-std::shared_ptr<IExpression> IUnaryOperator::simplify()
+std::shared_ptr<IExpression> UnaryOperator::simplify()
 {
 	if(auto sp = _1->simplify(); sp != _1)
 		return clone(sp)->simplify();
@@ -32,10 +32,10 @@ std::shared_ptr<IExpression> OptReverseNumber::simplify()
 				std::make_shared<OptReverseNumber>(sp->_2)
 		)->simplify();
 
-	return IUnaryOperator::simplify();
+	return UnaryOperator::simplify();
 }
 
-std::shared_ptr<IExpression> IBinaryOperator::simplify()
+std::shared_ptr<IExpression> BinaryOperator::simplify()
 {
 	// A*B => A' * B
 	if(auto sp = _1->simplify(); sp != _1)
@@ -73,7 +73,7 @@ std::shared_ptr<IExpression> OptPlus::simplify()
 	if(auto c1 = std::dynamic_pointer_cast<IConstant>(_1), c2  = std::dynamic_pointer_cast<IConstant>(_2); c1 && c2)
 		return c1->add(*c2)->simplify();
 
-	return IBinaryOperator::simplify();
+	return BinaryOperator::simplify();
 }
 
 std::shared_ptr<IExpression> OptMinus::simplify()
@@ -96,5 +96,14 @@ std::shared_ptr<IExpression> OptMultiply::simplify()
 	if(auto c1 = std::dynamic_pointer_cast<IConstant>(_1), c2  = std::dynamic_pointer_cast<IConstant>(_2); c1 && c2)
 		return c1->multiply(*c2)->simplify();
 
-	return IBinaryOperator::simplify();
+	// A*(B+C) -> A*B+A*C
+	if(auto sp = std::dynamic_pointer_cast<OptPlus>(_2))
+		return sp->clone(this->clone(_1, sp->_1), this->clone(_1, sp->_2))->simplify();
+
+	return BinaryOperator::simplify();
+}
+
+std::shared_ptr<IExpression> OptSqrt::simplify()
+{
+	return UnaryOperator::simplify();
 }

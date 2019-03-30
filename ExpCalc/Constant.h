@@ -88,19 +88,6 @@ public:
 	bool isOne() const override { return detail::isOne(value); }
 	std::shared_ptr<IConstant> invert() const override { return std::make_shared<TConstant<T>>(-get()); }
 
-//	bool equalsTo(const IConstant &rhs) const override
-//	{
-//		return rhs.rightEqualsTo(*this);
-//	}
-//	bool rightEqualsTo(const TConstant<int> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<long> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<long long> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<unsigned long> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<unsigned long long> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<float> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<double> &lhs) const override { return lhs.get() == this->get(); }
-//	bool rightEqualsTo(const TConstant<long double> &lhs) const override { return lhs.get() == this->get(); }
-
 public:
 	const T& get() const { return value; }
 

@@ -61,6 +61,10 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 	if(sv.front() == '(' && sv.back() == ')')
 		return buildExpression(sv.substr(1, sv.size() - 2));
 
+	// sqrt
+	if(sv.substr(0, 4) == "sqrt")
+		return std::make_shared<OptSqrt>(buildExpression(sv.substr(4)));
+
 	// handle constants
 	if(auto n = sv.find('.'); n != std::string_view::npos)
 		try {
