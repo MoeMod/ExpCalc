@@ -6,7 +6,11 @@
 #define EXPCALC_CONSTANT_H
 
 #include "IConstant.h"
+#include "UnaryOperator.h"
+#include "BinaryOperator.h"
+#include "MathUtil.h"
 #include "ctype.h"
+#include "math.h"
 
 namespace detail
 {
@@ -69,6 +73,39 @@ namespace detail
 	{
 		return std::forward<T>(v)==1;
 	}
+
+	template<class T>
+	auto sqrt_simplify(T value) -> typename std::enable_if<std::is_integral<T>::value, std::pair<T, T>>::type
+	{
+		assert(value >= 2);
+		T inside = value;
+		T outside = 1;
+		for(T i = 2; i <= value / 2; ++i)
+		{
+			while(inside % (i * i) == 0)
+			{
+				inside /= i * i;
+				outside *= i;
+			}
+		}
+		return std::make_pair(outside, inside);
+	}
+
+	template<class T>
+	auto sqrt_simplify(T value) -> typename std::enable_if<std::is_floating_point<T>::value, std::pair<T, int>>::type
+	{
+		return std::make_pair(sqrt(value), 1);
+	}
+
+	template<class T>
+	auto sqrt_simplify(T value) ->
+		typename std::enable_if<
+		        std::is_same<decltype(value.sqrt()), std::pair<T, T>>::value,
+		        std::pair<T, T>
+        >::type
+	{
+		return value.sqrt();
+	}
 }
 
 template<class T>
@@ -87,6 +124,43 @@ public:
 	bool isZero() const override { return detail::isZero(value); }
 	bool isOne() const override { return detail::isOne(value); }
 	std::shared_ptr<IConstant> invert() const override { return std::make_shared<TConstant<T>>(-get()); }
+
+	// first * sqrt(second)
+	std::pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>> sqrt() override
+	{
+		if(value < 0)
+			throw std::runtime_error("sqrt(x) with x<0");
+
+		if(value == 0)
+			return std::make_pair(IExpression::shared_from_this(), IExpression::shared_from_this());
+
+		if(value == 1)
+			return std::make_pair(IExpression::shared_from_this(), IExpression::shared_from_this());
+
+		auto [outside, inside] = detail::sqrt_simplify(value);
+
+		if(outside == 1)
+		{
+			assert(inside == value);
+			return std::make_pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>>(
+					std::make_shared<TConstant<int>>(1),
+			        IExpression::shared_from_this()
+	        );
+		}
+		else if(inside == 1)
+		{
+			assert(outside * outside == value);
+			return std::make_pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>>(
+					std::make_shared< TConstant<decltype(outside)> >(outside),
+					std::make_shared<TConstant<int>>(1)
+	        );
+		}
+
+		return std::make_pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>>(
+				std::make_shared<TConstant<decltype(outside)>>(outside),
+				std::make_shared<TConstant<decltype(inside)>>(inside)
+		);
+	}
 
 public:
 	const T& get() const { return value; }

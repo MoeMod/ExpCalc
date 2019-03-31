@@ -7,6 +7,8 @@
 #include "BinaryOperator.h"
 #include <mutex>
 
+#include "MathUtil.h"
+
 std::shared_ptr<IExpression> UnaryOperator::simplify()
 {
 	if(auto sp = _1->simplify(); sp != _1)
@@ -73,6 +75,16 @@ std::shared_ptr<IExpression> OptPlus::simplify()
 	if(auto c1 = std::dynamic_pointer_cast<IConstant>(_1), c2  = std::dynamic_pointer_cast<IConstant>(_2); c1 && c2)
 		return c1->add(*c2)->simplify();
 
+	// A+(C*A) -> (C+1)*A
+	if(auto sp = std::dynamic_pointer_cast<OptMultiply>(_2))
+	{
+		if(auto c = std::dynamic_pointer_cast<IConstant>(sp->_1))
+		{
+			// TODO
+		}
+
+	}
+
 	return BinaryOperator::simplify();
 }
 
@@ -105,5 +117,21 @@ std::shared_ptr<IExpression> OptMultiply::simplify()
 
 std::shared_ptr<IExpression> OptSqrt::simplify()
 {
+	if(auto sp = std::dynamic_pointer_cast<IConstant>(_1))
+	{
+		// sqrt0=0, sqrt1=1
+		if(sp->isZero() || sp->isOne())
+			return _1;
+
+		auto [out, in] = sp->sqrt();
+		if(in != sp)
+		{
+			return std::make_shared<OptMultiply>(
+					out,
+					std::make_shared<OptSqrt>(in)
+			)->simplify();
+		}
+	}
+
 	return UnaryOperator::simplify();
 }

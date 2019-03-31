@@ -48,7 +48,11 @@ public:
 	virtual bool equalsTo(const IConstant &rhs) const = 0;
 	virtual std::shared_ptr<IConstant> add(const IConstant &rhs) const = 0;
 	virtual std::shared_ptr<IConstant> multiply(const IConstant &rhs) const = 0;
+
 	virtual std::shared_ptr<IConstant> invert() const = 0;
+
+	// first * sqrt(second)
+	virtual std::pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>> sqrt() = 0;
 
 public:
 	// already bound lhs' type
