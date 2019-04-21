@@ -3,6 +3,7 @@
 //
 
 #include "Constant.h"
+#include "Zero.h"
 #include "UnaryOperator.h"
 #include "BinaryOperator.h"
 #include <mutex>
@@ -75,21 +76,68 @@ std::shared_ptr<IExpression> OptPlus::simplify()
 	if(auto c1 = std::dynamic_pointer_cast<IConstant>(_1), c2  = std::dynamic_pointer_cast<IConstant>(_2); c1 && c2)
 		return c1->add(*c2)->simplify();
 
-	// A+(C*A) -> (C+1)*A
-	if(auto sp = std::dynamic_pointer_cast<OptMultiply>(_2))
+	// A + A = 2*A
+	if(_1->equalsTo(_2) == JR_YES)
+		return std::make_shared<OptMultiply>(std::make_shared<TConstant<int>>(2), _1)->simplify();
+
+	// (?*?)+?
+	if(auto sp = std::dynamic_pointer_cast<OptMultiply>(_1))
 	{
-		if(auto c = std::dynamic_pointer_cast<IConstant>(sp->_1))
+		// (C*?)+?
+		if(auto pC = std::dynamic_pointer_cast<IConstant>(sp->_1))
 		{
-			// TODO
+			// (C*A)+A -> (C+1)*A
+			if(_2->equalsTo(sp->_1) == JR_YES)
+			{
+				return sp->clone(pC->add(TConstant<int>(1)), _2)->simplify();
+			}
 		}
 
+		// (?*C)+?
+		if(auto pC = std::dynamic_pointer_cast<IConstant>(sp->_2))
+		{
+			// (A*C)+A -> A*(C+1)
+			if(_2->equalsTo(sp->_1) == JR_YES)
+			{
+				return sp->clone(_2, pC->add(TConstant<int>(1)))->simplify();
+			}
+		}
 	}
+
+	// TODO
 
 	return BinaryOperator::simplify();
 }
 
 std::shared_ptr<IExpression> OptMinus::simplify()
 {
+	// A-A => 0
+	if(_1->equalsTo(_2) == JR_YES)
+		return std::make_shared<ZeroConstant>();
+
+	// (?*?)-?
+	if(auto sp = std::dynamic_pointer_cast<OptMultiply>(_1))
+	{
+		// (C*A)-A -> (C-1) * A
+		if(_2->equalsTo(sp->_1) == JR_YES)
+		{
+			if(auto pC = std::dynamic_pointer_cast<IConstant>(sp->_1))
+			{
+				return sp->clone(pC->add(TConstant<int>(-1)), _2)->simplify();
+			}
+		}
+		// (A*C)-A -> A*(C-1)
+		if(_2->equalsTo(sp->_1) == JR_YES)
+		{
+			if(auto pC = std::dynamic_pointer_cast<IConstant>(sp->_2))
+			{
+				return sp->clone(_2, pC->add(TConstant<int>(-1)))->simplify();
+			}
+		}
+	}
+
+	// TODO
+
 	// (A-B) => A + (-B)
 	return std::make_shared<OptPlus>(_1, std::make_shared<OptReverseNumber>(_2))->simplify();
 }

@@ -18,6 +18,10 @@ public:
 	{
 		return shared_from_this();
 	}
+	JudgeResult equalsTo(std::shared_ptr<IExpression> other) override
+	{
+		return JR_UNKNOWN;
+	}
 };
 
 class IUnaryOperator : public IOperator

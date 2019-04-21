@@ -12,6 +12,10 @@ class InvalidExpression : public IExpression
 public:
 	std::string toString() const override { return "[INVALID]"; }
 	std::shared_ptr<IExpression> simplify() override { return shared_from_this(); }
+	JudgeResult equalsTo(std::shared_ptr<IExpression> other) override
+	{
+		return JR_NO;
+	}
 };
 
 #endif //EXPCALC_INVALIDEXPRESSION_H

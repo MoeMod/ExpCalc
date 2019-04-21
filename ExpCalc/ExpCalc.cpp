@@ -12,6 +12,7 @@
 #include "UnaryOperator.h"
 #include "BinaryOperator.h"
 
+#include "Varible.h"
 #include "InvalidExpression.h"
 
 namespace detail
@@ -75,6 +76,11 @@ std::shared_ptr<IExpression> buildExpression(const std::string_view &sv)
 		return std::make_shared<TConstant<long long>>(std::stoull(std::string(sv))); // try
 	} catch(...) {}
 
+
+	if(sv.size() == 1 && isalpha(sv.front()))
+	{
+		return std::make_shared<Varible>(sv.front());
+	}
 
 	return std::make_shared<InvalidExpression>();
 }

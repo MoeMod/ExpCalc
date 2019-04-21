@@ -54,6 +54,13 @@ public:
 	// first * sqrt(second)
 	virtual std::pair<std::shared_ptr<IExpression>, std::shared_ptr<IExpression>> sqrt() = 0;
 
+private:
+	JudgeResult equalsTo(std::shared_ptr<IExpression> other) override
+	{
+		auto pCon = std::dynamic_pointer_cast<IConstant>(other);
+		return pCon ? (pCon->equalsTo(*this) ? JR_YES : JR_NO) : JR_UNKNOWN;
+	}
+
 public:
 	// already bound lhs' type
 	using IBaseConstantVisitorInterface::rightEqualsTo;
